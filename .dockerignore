@@ -1,0 +1,32 @@
+# Node modules and logs
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Development files
+.git
+.gitignore
+README.md
+.env.local
+.env.development
+
+# Test files
+__tests__
+test
+tests
+*.test.js
+
+# Build output
+dist
+build
+*.log
+
+# Editor directories and files
+.idea
+.vscode
+*.swp
+*.swo
+
+# System files
+.DS_Store
+Thumbs.db
