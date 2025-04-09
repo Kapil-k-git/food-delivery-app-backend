@@ -17,9 +17,23 @@ export class RestaurantService {
   ) { }
 
   async findAll() {
-    return this.restaurantRepo.find({
+    const restaurants = await this.restaurantRepo.find({
       where: { deletedAt: IsNull() },
       relations: ['owner'],
+    });
+    restaurants.map(restaurant=>{
+      if( restaurant && restaurant.owner ) delete (restaurant.owner as any).password;
+    })
+    return restaurants
+  }
+
+  async myRestaurants(ownerId: number){
+    const id = Number(ownerId);
+    return this.restaurantRepo.find({
+      where: {
+        owner: {id},
+        deletedAt: IsNull()
+      }
     });
   }
 
@@ -46,15 +60,16 @@ export class RestaurantService {
       throw new ForbiddenException('You are not authorized to update this restaurant');
     }
 
+    if(restaurant && restaurant.owner ) delete (restaurant.owner as any).password;
+
     Object.assign(restaurant, dto);
     return this.restaurantRepo.save(restaurant);
   }
 
   async delete(id: number, ownerId: number) {
     const restaurant = await this.restaurantRepo.findOne({
-      where: { id },
-      relations: ['owner'],
-      withDeleted: true,
+      where: { id, deletedAt: IsNull() },
+      relations: ['owner']
     });
 
     if (!restaurant) {
@@ -64,6 +79,7 @@ export class RestaurantService {
     if (restaurant.owner.id !== ownerId) {
       throw new ForbiddenException('You are not authorized to delete this restaurant');
     }
+    if(restaurant && restaurant.owner ) delete (restaurant.owner as any).password;
 
     return this.restaurantRepo.softRemove(restaurant);
   }
@@ -77,6 +93,8 @@ export class RestaurantService {
     if (!restaurant) {
       throw new NotFoundException('Restaurant not found');
     }
+
+    if(restaurant && restaurant.owner ) delete (restaurant.owner as any).password;
 
     return restaurant;
   }

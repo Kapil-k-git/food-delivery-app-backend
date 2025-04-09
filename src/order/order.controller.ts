@@ -16,16 +16,18 @@ import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/createOrder.dto';
 import { JwtAuthGuard } from 'src/auth/jwtAuth.guard';
 import { UpdateOrderStatusDto } from './dto/updateOrderStatus.dto';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { RequestWithUser } from 'src/common/types/requestWithUser';
+import { Role } from 'src/user/user.entity';
 
 @Controller('orders')
 @ApiTags('Orders')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class OrderController {
-  constructor(private readonly orderService: OrderService) {}
+  constructor(private readonly orderService: OrderService) { }
 
   @Post()
+  @ApiBearerAuth('access-token')
   @Roles('customer')
   @ApiOperation({ summary: 'Create a new order' })
   async create(
@@ -37,6 +39,7 @@ export class OrderController {
   }
 
   @Get()
+  @ApiBearerAuth('access-token')
   @Roles('customer')
   @ApiOperation({ summary: 'Get all orders for the logged-in customer' })
   async getMyOrders(@Req() req: RequestWithUser) {
@@ -44,6 +47,7 @@ export class OrderController {
   }
 
   @Get('/available')
+  @ApiBearerAuth('access-token')
   @Roles('rider')
   @ApiOperation({ summary: 'Get all available orders for delivery' })
   async getAvailableOrders() {
@@ -51,6 +55,7 @@ export class OrderController {
   }
 
   @Post(':id/accept')
+  @ApiBearerAuth('access-token')
   @Roles('rider')
   @ApiOperation({ summary: 'Accept an order as a delivery rider' })
   async acceptOrder(
@@ -61,6 +66,7 @@ export class OrderController {
   }
 
   @Post(':id/status')
+  @ApiBearerAuth('access-token')
   @Roles('rider')
   @ApiOperation({ summary: 'Update order status (picked_up, delivered)' })
   async updateOrderStatus(
@@ -73,4 +79,12 @@ export class OrderController {
     }
     return this.orderService.updateStatus(id, req.user, dto.status);
   }
+
+  @Get('history')
+  @ApiBearerAuth('access-token')
+  @Roles(Role.CUSTOMER)
+  getOrderHistory(@Req() req: RequestWithUser) {
+    return this.orderService.getOrderHistory(req.user.id);
+  }
+
 }

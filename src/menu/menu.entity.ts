@@ -20,12 +20,13 @@ export class Menu {
 
     @Column({ nullable: true })
     description: string;
-
+    
+    @DeleteDateColumn()
+    deletedAt: Date;
+    
     @ManyToOne(() => Restaurant, (restaurant) => restaurant.menuItems, {
         onDelete: 'CASCADE',
     })
     restaurant: Restaurant;
 
-    @DeleteDateColumn()
-    deletedAt: Date;
 }

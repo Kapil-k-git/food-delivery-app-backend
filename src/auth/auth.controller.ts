@@ -32,13 +32,4 @@ export class AuthController {
 
     return this.authService.login(user);
   }
-
-  @UseGuards(AuthGuard('jwt'))
-  @Get('me')
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get current logged-in user info' })
-  @ApiResponse({ status: 200, description: 'Current user info returned' })
-  getMe(@GetUser() user: User) {
-    return user;
-  }
 }

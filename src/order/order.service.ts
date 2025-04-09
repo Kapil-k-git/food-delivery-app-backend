@@ -39,7 +39,10 @@ export class OrderService {
     const menuIds = items.map((item) => item.menuId);
 
     const firstMenu = await this.menuRepo.findOne({
-      where: { id: menuIds[0] },
+      where: {
+        id: menuIds[0],
+        deletedAt: IsNull()
+      },
       relations: ['restaurant'],
     });
 
@@ -50,7 +53,10 @@ export class OrderService {
     const restaurant = firstMenu.restaurant;
 
     const menuItems = await this.menuRepo.find({
-      where: { id: In(menuIds) },
+      where: {
+        id: In(menuIds),
+        deletedAt: IsNull()
+      },
       relations: ['restaurant'],
     });
 
@@ -80,31 +86,47 @@ export class OrderService {
 
     const savedOrder = await this.orderRepo.save(order);
 
-    // Optional: reload with relations for return payload consistency
-    return this.orderRepo.findOne({
+    const orderResponse = await this.orderRepo.findOne({
       where: { id: savedOrder.id },
       relations: ['customer', 'restaurant', 'items'],
     });
+    if (orderResponse && orderResponse.customer) {
+      delete (orderResponse.customer as any).password;
+    }
+    return orderResponse
   }
 
-
-
   async getCustomerOrders(customerId: number) {
-    return this.orderRepo.find({
+    const orderResponse = await this.orderRepo.find({
       where: { customer: { id: customerId } },
       relations: ['restaurant', 'items', 'deliveryRider'],
       order: { createdAt: 'DESC' },
     });
+
+    orderResponse.map(order=>{
+      if (order && order.deliveryRider) {
+        delete (order.deliveryRider as any).password;
+      }
+    })
+
+    return orderResponse;
+
   }
 
   async getAvailableOrders() {
-    return this.orderRepo.find({
+    const availableOrders = await this.orderRepo.find({
       where: {
         status: OrderStatus.PENDING,
         deliveryRider: IsNull(),
       },
       relations: ['restaurant', 'items', 'customer'],
     });
+    
+    availableOrders.map(order=>{
+      if( order && order.customer ) delete (order.customer as any).password;
+    })
+    
+    return availableOrders;
   }
 
   async acceptOrder(orderId: number, rider: User) {
@@ -138,40 +160,38 @@ export class OrderService {
   async updateStatus(orderId: number, rider: User, newStatus: OrderStatus) {
     const order = await this.orderRepo.findOne({
       where: { id: orderId },
-      relations: ['deliveryRider','customer'],
+      relations: ['deliveryRider', 'customer'],
     });
-  
+
     if (!order) {
       throw new NotFoundException('Order not found');
     }
-  
-    // Optional: make sure only the assigned rider can update
+
     if (order.deliveryRider?.id !== rider.id) {
       throw new ForbiddenException('You are not assigned to this order');
     }
-  
-    // Define valid transitions
+
     const validTransitions: Record<OrderStatus, OrderStatus[]> = {
       [OrderStatus.PENDING]: [OrderStatus.ACCEPTED],
       [OrderStatus.ACCEPTED]: [OrderStatus.PICKED_UP],
       [OrderStatus.PICKED_UP]: [OrderStatus.DELIVERED],
       [OrderStatus.DELIVERED]: [],
     };
-  
+
     const allowedNextStatuses = validTransitions[order.status];
-  
+
     if (!allowedNextStatuses.includes(newStatus)) {
       throw new BadRequestException(
         `Invalid status transition from ${order.status} to ${newStatus}`,
       );
     }
-  
+
     order.status = newStatus;
-  
+
     if (newStatus === OrderStatus.DELIVERED) {
       order.deliveredAt = new Date();
     }
-  
+
     this.orderRepo.save(order);
 
     this.gateway.sendOrderUpdate(order.customer.id, {
@@ -179,6 +199,19 @@ export class OrderService {
       status: order.status,
       timestamp: new Date(),
     });
+
+    if(order && order.customer) delete (order.customer as any).password
+    if(order && order.deliveryRider) delete (order.deliveryRider as any).password
+
+    return order
   }
-  
+
+  async getOrderHistory(customerId: number) {
+    return this.orderRepo.find({
+      where: { customer: { id: customerId } },
+      relations: ['restaurant'],
+      order: { createdAt: 'DESC' },
+    });
+  }
+
 }
