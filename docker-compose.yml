@@ -1,38 +1,32 @@
+version: "3.9"
 services:
-  node-app:
+  db:
+    image: mysql:8
+    restart: always
+    container_name: mysql-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: food_delivery
+    ports:
+      - "3306:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+
+  backend:
     build: .
-    container_name: node-app
+    container_name: nest-backend
     ports:
       - "3000:3000"
     depends_on:
-      - mysql-db
+      - db
     environment:
-      - DB_HOST=mysql-db
-      - DB_USER=root
-      - DB_PASSWORD=newroot
-      - DB_NAME=food_delivery
-    restart: unless-stopped
-    networks:
-      - app-network
-
-  mysql-db:
-    image: mysql:8.0.14
-    container_name: mysql-db
-    ports:
-      - "3306:3306"
-    environment:
-      - MYSQL_ROOT_PASSWORD=newroot
-      - MYSQL_DATABASE=food_delivery
-    volumes:
-      - mysql-data:/var/lib/mysql
-      - ./init-db:/docker-entrypoint-initdb.d
-    restart: unless-stopped
-    networks:
-      - app-network
-
-networks:
-  app-network:
-    driver: bridge
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      DB_NAME: food_delivery
+      JWT_SECRET: JWT_SECRET
+    command: ["npm", "run", "start:prod"]
 
 volumes:
-  mysql-data:
+  db-data:
