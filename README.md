@@ -1,98 +1,135 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+🍔 NestJS Food Delivery Backend
+A production-ready, fully-featured backend for a food delivery platform built using NestJS and MySQL, complete with JWT authentication, role-based access, WebSocket real-time updates, and Swagger API documentation.
+"Build once, scale infinitely."
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+🚀 Features
+👥 Roles & Permissions
+    • Customer: Browse restaurants and menus, place orders, track status.
+    • Restaurant Owner: Manage own restaurants and menu items.
+    • Delivery Rider: Accept and deliver orders, update status.
+🔐 Authentication handled via JWT + Passport
+🔒 Role-based access control using custom guards
+🍽 Restaurant & Menu Management
+    • Owners can create/update/delete:
+        ◦ Restaurants
+        ◦ Menu items (linked to their own restaurants)
+    • Access is tightly scoped to authenticated owners
+🛒 Order Management
+    • Customers can:
+        ◦ View restaurants and menus
+        ◦ Place orders (mocked payment)
+        ◦ View order history & details
+    • Orders include:
+        ◦ Delivery status (pending, accepted, picked_up, delivered)
+        ◦ Assigned rider info
+        ◦ Delivery timestamp
+🛵 Delivery Workflow
+    • Riders can:
+        ◦ View unassigned orders
+        ◦ Accept one order at a time
+        ◦ Update order status as they deliver
+🔴 Real-Time Order Updates
+    • Implemented using WebSocket (Socket.IO)
+    • Customers receive live delivery updates
+    • Secure, room-based subscriptions by user
+📖 API Documentation
+    • Fully documented with Swagger UI
+    • Available at: http://localhost:3000/api-docs
+    • Auto-generated schemas, request bodies, role info
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+📦 Tech Stack
+Category
+Stack
+Language
+TypeScript
+Framework
+NestJS
+Database
+MySQL
+ORM
+TypeORM
+Authentication
+JWT, Passport
+Real-time
+WebSocket (Socket.IO)
+API Docs
+Swagger (@nestjs/swagger)
+DevOps
+Docker, docker-compose
 
-## Description
+🛠 Project Structure
+src/
+├── auth/             // Auth logic, JWT, guards, roles
+├── user/             // User entity & service
+├── restaurant/       // Restaurant CRUD for owners
+├── menu/             // Menu items CRUD
+├── order/            // Order placing, history, delivery updates
+├── websocket/        // WebSocket gateway for real-time updates
+├── common/           // Interceptors, decorators, utils
+├── main.ts           // App bootstrap
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+🧪 Endpoints Overview
+✅ Auth
+    • POST /auth/register
+    • POST /auth/login
+    • GET /auth/me
+🍽 Restaurant
+    • POST /restaurant (owner only)
+    • GET /restaurant (public)
+    • PATCH /restaurant/:id (owner only)
+    • DELETE /restaurant/:id (owner only)
+📋 Menu
+    • POST /menu/:restaurantId (owner only)
+    • PATCH /menu/:id (owner only)
+    • DELETE /menu/:id (owner only)
+    • GET /menu/restaurant/:restaurantId (public)
+🛒 Orders
+    • POST /orders (customer only)
+    • GET /orders/history (customer only)
+    • GET /orders (rider only)
+    • POST /orders/:id/accept (rider only)
+    • POST /orders/:id/status (rider only)
 
-## Project setup
+🧰 Local Setup (Dockerized)
+Prerequisites
+    • Docker + Docker Compose
+Steps
+git clone https://github.com/your-username/food-delivery-backend.git
+cd food-delivery-backend
+cp .env.example .env
+docker-compose up --build
+Result
+    • Backend: http://localhost:3000
+    • Swagger: http://localhost:3000/api-docs
+    • MySQL DB: localhost:3306
+Automatically runs DB migration & seeds initial data 🎉
 
-```bash
-$ npm install
-```
+🧾 Environment Variables
+.env.example:
+DB_HOST=db
+DB_PORT=3306
+DB_USERNAME=root
+DB_PASSWORD=secret
+DB_NAME=food_delivery
+JWT_SECRET=your_jwt_secret
+JWT_EXPIRES_IN=3600s
 
-## Compile and run the project
+🛠 Scripts
+# Start in development
+docker-compose up --build
 
-```bash
-# development
-$ npm run start
+# Run migration manually
+npm run typeorm migration:run
 
-# watch mode
-$ npm run start:dev
+# Seed script (on boot or manually)
+npm run seed
 
-# production mode
-$ npm run start:prod
-```
+🔥 Future Enhancements
+    • Email notifications
+    • Payment integration
+    • Admin dashboard
+    • Unit & e2e testing
 
-## Run tests
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+👨‍💻 Author
+Kapil Patel
+GitHub: Kapil-k-git
